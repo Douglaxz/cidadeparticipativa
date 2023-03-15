@@ -1,20 +1,29 @@
 # importação de dependencias
 from datetime import datetime, date
-from flask import Flask, render_template, request, redirect, session, flash, url_for, send_from_directory,send_file
+from flask import Flask, render_template, request, redirect, session, flash, url_for, send_from_directory,send_file,jsonify
 from flask_qrcode import QRcode
 import time
 from datetime import date, timedelta
 from cidadeparticipativa import app, db
 from sqlalchemy import func
 from models import tb_user,\
-    tb_usertype
+    tb_usertype,\
+    tb_tiposolicitacao,\
+    tb_tiposervico,\
+    tb_solicitacao
 from helpers import \
     frm_pesquisa, \
     frm_editar_senha,\
     frm_editar_usuario,\
     frm_visualizar_usuario, \
     frm_visualizar_tipousuario,\
-    frm_editar_tipousuario
+    frm_editar_tipousuario,\
+    frm_editar_tiposervico,\
+    frm_visualizar_tiposervico,\
+    frm_editar_tiposolicitacao,\
+    frm_visualizar_tiposolicitacao,\
+    frm_editar_solicitacao,\
+    frm_visualizar_solicitacao
 
 
 # ITENS POR PÁGINA
@@ -92,6 +101,20 @@ def autenticar():
         flash('Usuário não logado com sucesso','success')
         return redirect(url_for('login'))
 
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: cep
+#FUNÇÃO: consultar
+#PODE ACESSAR: todos
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/get_rua_by_cep')
+def get_rua_by_cep():
+    cep = request.args.get('cep')
+    url = f'https://viacep.com.br/ws/{cep}/json/'
+    response = requests.get(url)
+    data = response.json()
+
+    rua = data.get('logradouro')
+    return jsonify({'rua': rua})
 ##################################################################################################################################
 #USUARIOS
 ##################################################################################################################################
@@ -429,3 +452,454 @@ def atualizarTipoUsuario():
         flash('Favor verificar os campos!','danger')
     return redirect(url_for('visualizarTipoUsuario', id=request.form['id']))
 
+##################################################################################################################################
+#TIPO DE SOLICITAÇÃO
+##################################################################################################################################
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: tiposolicitacao
+#FUNÇÃO: listar
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/tiposolicitacao', methods=['POST','GET'])
+def tiposolicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('tiposolicitacao')))         
+    page = request.args.get('page', 1, type=int)
+    form = frm_pesquisa()   
+    pesquisa = form.pesquisa.data
+    if pesquisa == "":
+        pesquisa = form.pesquisa_responsiva.data
+    
+    if pesquisa == "" or pesquisa == None:     
+        tipossolicitacao = tb_tiposolicitacao.query.order_by(tb_tiposolicitacao.desc_tiposolicitacao)\
+        .paginate(page=page, per_page=ROWS_PER_PAGE , error_out=False)
+    else:
+        tipossolicitacao = tb_tiposolicitacao.query.order_by(tb_tiposolicitacao.desc_tiposolicitacao)\
+        .filter(tb_tiposolicitacao.desc_tiposolicitacao.ilike(f'%{pesquisa}%'))\
+        .paginate(page=page, per_page=ROWS_PER_PAGE, error_out=False)        
+    return render_template('tiposolicitacao.html', titulo='Tipo Solicitação', tipossolicitacao=tipossolicitacao, form=form)
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: novoTipoSolicitacao
+#FUNÇÃO: formulario de inclusão
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/novoTipoSolicitacao')
+def novoTipoSolicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('novoTipoSolicitacao'))) 
+    form = frm_editar_tiposolicitacao()
+    return render_template('novoTiposolicitacao.html', titulo='Novo Tipo Solicitação', form=form)
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: criarTipoSolicitacao
+#FUNÇÃO: inclusão no banco de dados
+#PODE ACESSAR: administrador
+#--------------------------------------------------------------------------------------------------------------------------------- 
+@app.route('/criarTipoSolicitacao', methods=['POST',])
+def criarTipoSolicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('criarTiposolicitacao')))     
+    form = frm_editar_tiposolicitacao(request.form)
+    if not form.validate_on_submit():
+        flash('Por favor, preencha todos os dados','danger')
+        return redirect(url_for('criarTiposolicitacao'))
+    desc  = form.descricao.data
+    status = form.status.data
+    tiposolicitacao = tb_tiposolicitacao.query.filter_by(desc_tiposolicitacao=desc).first()
+    if tiposolicitacao:
+        flash ('Tipo Solicitação já existe','danger')
+        return redirect(url_for('tiposolicitacao')) 
+    novoTiposolicitacao = tb_tiposolicitacao(desc_tiposolicitacao=desc, status_tiposolicitacao=status)
+    flash('Tipo de solicitação criado com sucesso!','success')
+    db.session.add(novoTiposolicitacao)
+    db.session.commit()
+    return redirect(url_for('tiposolicitacao'))
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: visualizarTipoSolicitacao
+#FUNÇÃO: formulario de visualização
+#PODE ACESSAR: administrador
+#--------------------------------------------------------------------------------------------------------------------------------- 
+@app.route('/visualizarTipoSolicitacao/<int:id>')
+def visualizarTipoSolicitacao(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('visualizarTipoSolicitacao')))  
+    tiposolicitacao = tb_tiposolicitacao.query.filter_by(cod_tiposolicitacao=id).first()
+    form = frm_visualizar_tiposolicitacao()
+    form.descricao.data = tiposolicitacao.desc_tiposolicitacao
+    form.status.data = tiposolicitacao.status_tiposolicitacao
+    return render_template('visualizarTipoSolicitacao.html', titulo='Visualizar Tipo Solicitação', id=id, form=form)   
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: editarTipoSolicitacao
+##FUNÇÃO: formulário de edição
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/editarTipoSolicitacao/<int:id>')
+def editarTipoSolicitacao(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('editarTipoSolicitacao')))  
+    tiposolicitacao = tb_tiposolicitacao.query.filter_by(cod_tiposolicitacao=id).first()
+    form = frm_editar_tiposolicitacao()
+    form.descricao.data = tiposolicitacao.desc_tiposolicitacao
+    form.status.data = tiposolicitacao.status_tiposolicitacao
+    return render_template('editarTipoSolicitacao.html', titulo='Editar Tipo Solicitação', id=id, form=form)   
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: atualizarTipoSolicitacao
+#FUNÇÃO: alterar informações no banco de dados
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/atualizarTipoSolicitacao', methods=['POST',])
+def atualizarTipoSolicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('atualizarTipoSolicitacao')))      
+    form = frm_editar_tiposolicitacao(request.form)
+    if form.validate_on_submit():
+        id = request.form['id']
+        tiposolicitacao = tb_tiposolicitacao.query.filter_by(cod_tiposolicitacao=request.form['id']).first()
+        tiposolicitacao.desc_tiposolicitacao = form.descricao.data
+        tiposolicitacao.status_tiposolicitacao = form.status.data
+        db.session.add(tiposolicitacao)
+        db.session.commit()
+        flash('Tipo de solicitação atualizado com sucesso!','success')
+    else:
+        flash('Favor verificar os campos!','danger')
+    return redirect(url_for('visualizarTipoSolicitacao', id=request.form['id']))
+
+##################################################################################################################################
+#TIPO DE SERVIÇO
+##################################################################################################################################
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: tiposervico
+#FUNÇÃO: listar
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/tiposervico', methods=['POST','GET'])
+def tiposervico():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('tiposervico')))         
+    page = request.args.get('page', 1, type=int)
+    form = frm_pesquisa()   
+    pesquisa = form.pesquisa.data
+    if pesquisa == "":
+        pesquisa = form.pesquisa_responsiva.data
+    
+    if pesquisa == "" or pesquisa == None:     
+        tiposservico = tb_tiposervico.query.order_by(tb_tiposervico.desc_tiposervico)\
+        .paginate(page=page, per_page=ROWS_PER_PAGE , error_out=False)
+    else:
+        tiposservico = tb_tiposervico.query.order_by(tb_tiposervico.desc_tiposervico)\
+        .filter(tb_tiposervico.desc_tiposervico.ilike(f'%{pesquisa}%'))\
+        .paginate(page=page, per_page=ROWS_PER_PAGE, error_out=False)        
+    return render_template('tiposervico.html', titulo='Tipo Serviço', tiposservico=tiposservico, form=form)
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: novoTipoServico
+#FUNÇÃO: formulario de inclusão
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/novoTipoServico')
+def novoTipoServico():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('novoTipoServico'))) 
+    form = frm_editar_tiposervico()
+    return render_template('novoTipoServico.html', titulo='Novo Tipo Serviço', form=form)
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: criarTipoServico
+#FUNÇÃO: inclusão no banco de dados
+#PODE ACESSAR: administrador
+#--------------------------------------------------------------------------------------------------------------------------------- 
+@app.route('/criarTipoServico', methods=['POST',])
+def criarTipoServico():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('criarTipoServico')))     
+    form = frm_editar_tiposervico(request.form)
+    if not form.validate_on_submit():
+        flash('Por favor, preencha todos os dados','danger')
+        return redirect(url_for('criarTipoServico'))
+    desc  = form.descricao.data
+    status = form.status.data
+    tiposervico = tb_tiposervico.query.filter_by(desc_tiposervico=desc).first()
+    if tiposervico:
+        flash ('Tipo Serviço já existe','danger')
+        return redirect(url_for('tiposervico')) 
+    novotiposervico = tb_tiposervico(desc_tiposervico=desc, status_tiposervico=status)
+    flash('Tipo de serviço criado com sucesso!','success')
+    db.session.add(novotiposervico)
+    db.session.commit()
+    return redirect(url_for('tiposervico'))
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: visualizarTipoServico
+#FUNÇÃO: formulario de visualização
+#PODE ACESSAR: administrador
+#--------------------------------------------------------------------------------------------------------------------------------- 
+@app.route('/visualizarTipoServico/<int:id>')
+def visualizarTipoServico(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('visualizarTipoServico')))  
+    tiposervico = tb_tiposervico.query.filter_by(cod_tiposervico=id).first()
+    form = frm_visualizar_tiposervico()
+    form.descricao.data = tiposervico.desc_tiposervico
+    form.status.data = tiposervico.status_tiposervico
+    return render_template('visualizarTipoServico.html', titulo='Visualizar Tipo Solicitação', id=id, form=form)   
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: editarTipoServico
+##FUNÇÃO: formulário de edição
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/editarTipoServico/<int:id>')
+def editarTipoServico(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('editarTipoSolicitacao')))  
+    tiposervico = tb_tiposervico.query.filter_by(cod_tiposervico=id).first()
+    form = frm_editar_tiposervico()
+    form.descricao.data = tiposervico.desc_tiposervico
+    form.status.data = tiposervico.status_tiposervico
+    return render_template('editarTipoServico.html', titulo='Editar Tipo Serviço', id=id, form=form)   
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: atualizarTipoServico
+#FUNÇÃO: alterar informações no banco de dados
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/atualizarTipoServico', methods=['POST',])
+def atualizarTipoServico():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('atualizarTipoServico')))      
+    form = frm_editar_tiposervico(request.form)
+    if form.validate_on_submit():
+        id = request.form['id']
+        tiposervico = tb_tiposervico.query.filter_by(cod_tiposervico=request.form['id']).first()
+        tiposervico.desc_tiposervico = form.descricao.data
+        tiposervico.status_tiposervico = form.status.data
+        db.session.add(tiposervico)
+        db.session.commit()
+        flash('Tipo de serviço atualizado com sucesso!','success')
+    else:
+        flash('Favor verificar os campos!','danger')
+    return redirect(url_for('visualizarTipoServico', id=request.form['id']))
+
+##################################################################################################################################
+#SOLICITAÇÕES
+##################################################################################################################################
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: solicitacao
+#FUNÇÃO: listar
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/solicitacao', methods=['POST','GET'])
+def solicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('solicitacao')))         
+    page = request.args.get('page', 1, type=int)
+    form = frm_pesquisa()   
+    pesquisa = form.pesquisa.data
+    if pesquisa == "":
+        pesquisa = form.pesquisa_responsiva.data
+    
+    if pesquisa == "" or pesquisa == None:     
+        solicitacoes = tb_solicitacao.query.order_by(tb_solicitacao.desc_solicitacao)\
+        .paginate(page=page, per_page=ROWS_PER_PAGE , error_out=False)
+    else:
+        solicitacoes = tb_solicitacao.query.order_by(tb_solicitacao.desc_solicitacao)\
+        .filter(tb_solicitacao.desc_solicitacao.ilike(f'%{pesquisa}%'))\
+        .paginate(page=page, per_page=ROWS_PER_PAGE, error_out=False)        
+    return render_template('solicitacao.html', titulo='Solicitações', solicitacoes=solicitacoes, form=form)
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: novoSolicitacao
+#FUNÇÃO: formulario de inclusão
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/novoSolicitacao')
+def novoSolicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('novoSolicitacao'))) 
+    form = frm_editar_solicitacao()
+    return render_template('novoSolicitacao.html', titulo='Nova Solicitação', form=form)
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: criarSolicitacao
+#FUNÇÃO: inclusão no banco de dados
+#PODE ACESSAR: administrador
+#--------------------------------------------------------------------------------------------------------------------------------- 
+@app.route('/criarSolicitacao', methods=['POST',])
+def criarSolicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('criarSolicitacao')))     
+    form = frm_editar_solicitacao(request.form)
+    if not form.validate_on_submit():
+        flash('Por favor, preencha todos os dados','danger')
+        return redirect(url_for('criarSolicitacao'))
+    descricao  = form.descricao.data
+    status = form.status.data
+    tiposolicitacao  = form.tiposolicitacao.data
+    tiposervico  = form.tiposervico.data
+    cep  = form.cep.data
+    rua  = form.rua.data
+    numero  = form.numero.data
+    bairro  = form.bairro.data
+    uf  = form.uf.data
+    cidade  = form.cidade.data
+    nome  = form.nome.data
+    sexo  = form.sexo.data
+    cepsolicitante  = form.cepsolicitante.data
+    ruasolicitante  = form.ruasolicitante.data
+    numerosolicitante  = form.numerosolicitante.data
+    bairrosolicitante  = form.bairrosolicitante.data
+    ufsolicitante  = form.ufsolicitante.data
+    cidadesolicitante  = form.cidadesolicitante.data
+       
+    
+    
+
+
+    novoSolicitacao = tb_solicitacao(desc_solicitacao = descricao,\
+                                    cod_tiposervico = tiposolicitacao,\
+                                    cod_tiposolicitacao = tiposervico,\
+                                    cep_solicitacao = cep,\
+                                    rua_solicitacao = rua,\
+                                    numerores_solicitacao = numero,\
+                                    bairro_solicitacao = bairro,\
+                                    cidade_solicitacao = uf,\
+                                    uf_solicitacao = cidade,\
+                                    nome_solicitacao = nome,\
+                                    sexo_solicitacao = sexo,\
+                                    cepsolicitante_solicitacao = cepsolicitante,\
+                                    ruasolicitante_solicitacao = ruasolicitante,\
+                                    numeroressolicitante_solicitacao = numerosolicitante,\
+                                    bairrosolicitante_solicitacao = bairrosolicitante,\
+                                    cidadesolicitante_solicitacao = cidadesolicitante,\
+                                    ufsolicitante_solicitacao = ufsolicitante,\
+                                    status_tiposervico=status\
+                                     )
+    flash('Solicitação criada com sucesso!','success')
+    db.session.add(novoSolicitacao)
+    db.session.commit()
+    return redirect(url_for('solicitacao'))
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: visualizarSolicitacao
+#FUNÇÃO: formulario de visualização
+#PODE ACESSAR: administrador
+#--------------------------------------------------------------------------------------------------------------------------------- 
+@app.route('/visualizarSolicitacao/<int:id>')
+def visualizarSolicitacao(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('visualizarSolicitacao')))  
+    solicitacao = tb_solicitacao.query.filter_by(cod_solicitacao=id).first()
+    form = frm_visualizar_solicitacao()
+    form.descricao.data = solicitacao.desc_solicitacao
+    form.tiposolicitacao.data = solicitacao.cod_tiposolicitacao
+    form.tiposervico.data = solicitacao.cod_tiposervico
+    form.cep.data = solicitacao.cep_solicitacao
+    form.rua.data = solicitacao.rua_solicitacao
+    form.numero.data = solicitacao.numero_solicitacao
+    form.bairro.data = solicitacao.bairro_solicitacao
+    form.uf.data = solicitacao.uf_solicitacao
+    form.cidade.data = solicitacao.cidade_solicitacao
+    form.nome.data = solicitacao.nome_solicitacao
+    form.sexo.data = solicitacao.sexo_solicitacao
+    form.cepsolicitante.data = solicitacao.cepsolicitante_solicitacao
+    form.ruasolicitante.data = solicitacao.ruasolicitante_solicitacao
+    form.numerosolicitante.data = solicitacao.numerosolicitante_solicitacao
+    form.bairrosolicitante.data = solicitacao.bairrosolicitante_solicitacao
+    form.ufsolicitante.data = solicitacao.ufsolicitante_solicitacao
+    form.cidadesolicitante.data = solicitacao.cidadesolicitante_solicitacao
+    form.status.data = solicitacao.status_solicitacao
+    return render_template('visualizarSolicitacao.html', titulo='Visualizar Solicitacao', id=id, form=form)   
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: editarSolicitacao
+##FUNÇÃO: formulário de edição
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/editarSolicitacao/<int:id>')
+def editarSolicitacao(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('editarSolicitacao')))  
+    solicitacao = tb_solicitacao.query.filter_by(cod_solicitacao=id).first()
+    form = frm_editar_solicitacao()
+    form.descricao.data = solicitacao.desc_solicitacao
+    form.tiposolicitacao.data = solicitacao.cod_tiposolicitacao
+    form.tiposervico.data = solicitacao.cod_tiposervico
+    form.cep.data = solicitacao.cep_solicitacao
+    form.rua.data = solicitacao.rua_solicitacao
+    form.numero.data = solicitacao.numero_solicitacao
+    form.bairro.data = solicitacao.bairro_solicitacao
+    form.uf.data = solicitacao.uf_solicitacao
+    form.cidade.data = solicitacao.cidade_solicitacao
+    form.nome.data = solicitacao.nome_solicitacao
+    form.sexo.data = solicitacao.sexo_solicitacao
+    form.cepsolicitante.data = solicitacao.cepsolicitante_solicitacao
+    form.ruasolicitante.data = solicitacao.ruasolicitante_solicitacao
+    form.numerosolicitante.data = solicitacao.numerosolicitante_solicitacao
+    form.bairrosolicitante.data = solicitacao.bairrosolicitante_solicitacao
+    form.ufsolicitante.data = solicitacao.ufsolicitante_solicitacao
+    form.cidadesolicitante.data = solicitacao.cidadesolicitante_solicitacao
+    form.status.data = solicitacao.status_solicitacao
+    return render_template('editarSolicitacao.html', titulo='Editar Solicitação', id=id, form=form)   
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: atualizarSolicitacao
+#FUNÇÃO: alterar informações no banco de dados
+#PODE ACESSAR: administrador
+#---------------------------------------------------------------------------------------------------------------------------------
+@app.route('/atualizarSolicitacao', methods=['POST',])
+def atualizarSolicitacao():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('atualizarSolicitacao')))      
+    form = frm_editar_solicitacao(request.form)
+    if form.validate_on_submit():
+        id = request.form['id']
+        solicitacao = tb_solicitacao.query.filter_by(cod_solicitacao=request.form['id']).first()
+        solicitacao.desc_solicitacao = form.descricao.data
+        solicitacao.status_solicitacao = form.status.data
+        solicitacao.cod_tiposervico = form.tiposolicitacao.data
+        solicitacao.cod_tiposolicitacao = form.tiposervico.data
+        solicitacao.cep_solicitacao = form.cep.data
+        solicitacao.rua_solicitacao = form.rua.data
+        solicitacao.numerores_solicitacao = form.numero.data
+        solicitacao.bairro_solicitacao = form.bairro.data
+        solicitacao.cidade_solicitacao = form.uf.data
+        solicitacao.uf_solicitacao = form.cidade.data
+        solicitacao.nome_solicitacao = form.nome.data
+        solicitacao.sexo_solicitacao = form.sexo.data
+        solicitacao.cepsolicitante_solicitacao = form.cepsolicitante.data
+        solicitacao.ruasolicitante_solicitacao = form.ruasolicitante.data
+        solicitacao.numeroressolicitante_solicitacao = form.numerosolicitante.data
+        solicitacao.bairrosolicitante_solicitacao = form.bairrosolicitante.data
+        solicitacao.cidadesolicitante_solicitacao = form.cidadesolicitante.data
+        solicitacao.ufsolicitante_solicitacao = form.ufsolicitante.data
+        db.session.add(solicitacao)
+        db.session.commit()
+        flash('Solicitação atualizado com sucesso!','success')
+    else:
+        flash('Favor verificar os campos!','danger')
+    return redirect(url_for('visualizarTipoServico', id=request.form['id']))
