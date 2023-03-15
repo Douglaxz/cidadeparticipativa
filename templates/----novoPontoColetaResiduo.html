@@ -1,0 +1,54 @@
+{% extends 'template.html' %}
+{% block conteudo %}
+  <form method="post" action="{{ url_for('criarPontoColetaResiduo',idpontocoleta=idpontocoleta) }}" enctype="multipart/form-data" id="formulario">
+    <div class="box_cabecalho">
+      <div class="box_titulo_interno">
+        <i class="bi bi-card-list" data-toggle="tooltip" data-placement="right" title="Tipo Usuários"></i> {{ titulo }}
+      </div>
+      <div class="box_botoes">
+        <a class="btn btn_titulo" href="#" onclick="myFunction()"><i class="bi bi-save" style="font-size:1.5rem; color:white;"></i></a>
+      </div>
+      <div class="box_botoes">
+        <a class="btn btn_titulo" href="{{ url_for('visualizarPontoColeta',idpontocoleta=idpontocoleta) }}"><i class="bi bi-reply" style="font-size:1.5rem; color:white;"></i></a>
+      </div>
+    </div>
+    <!-- conteudo -->
+    <div class="boxformulario">
+      <fieldset>
+        {{ form.csrf_token() }}
+        <div class="form-group">{{ form.residuo.label(class = 'form-label') }}
+          {{ form.residuo(class = 'form-control') }}
+        </div>
+        <div class="form-group">{{ form.acondicionamento.label(class = 'form-label') }}
+            {{ form.acondicionamento(class = 'form-control') }}
+        </div>          
+        <div class="form-group">{{ form.periodicidade.label(class = 'form-label') }}
+          {{ form.periodicidade(class = 'form-control') }}
+        </div>
+        <div class="form-group">{{ form.tipoveiculo.label(class = 'form-label') }}
+          {{ form.tipoveiculo(class = 'form-control') }}
+        </div>
+        <div class="form-group">{{ form.status.label(class = 'form-label') }}
+          {{ form.status(class = 'form-control') }}
+        </div>
+        <div class="form-group form-label">Dias de Coleta</div>         
+        <div class="form-group">
+          {{ form.diadom.label(class = 'form-label') }}
+          {{ form.diadom(class = 'form-check-input') }}
+          {{ form.diaseg.label(class = 'form-label') }}
+          {{ form.diaseg(class = 'form-check-input') }}
+          {{ form.diater.label(class = 'form-label') }}
+          {{ form.diater(class = 'form-check-input') }}
+          {{ form.diaqua.label(class = 'form-label') }}
+          {{ form.diaqua(class = 'form-check-input') }}
+          {{ form.diaqui.label(class = 'form-label') }}
+          {{ form.diaqui(class = 'form-check-input') }}
+          {{ form.diasex.label(class = 'form-label') }}
+          {{ form.diasex(class = 'form-check-input') }}
+          {{ form.diasab.label(class = 'form-label') }}
+          {{ form.diasab(class = 'form-check-input') }}
+        </div>            
+      </fieldset>
+    </div>
+  </form>
+{% endblock %}
