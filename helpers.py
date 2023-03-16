@@ -1,9 +1,9 @@
 #importações
 import os
 from cidadeparticipativa import app, db
-from models import tb_user, tb_usertype, tb_tiposolicitacao, tb_tiposervico
+from models import tb_user, tb_usertype, tb_tiposolicitacao, tb_tiposervico,tb_solicitacao_foto
 from flask_wtf import FlaskForm
-from wtforms import Form, StringField, validators, SubmitField,IntegerField, SelectField,PasswordField,DateField,EmailField,BooleanField,RadioField, TextAreaField, TimeField, TelField, DateTimeLocalField,FloatField, DecimalField 
+from wtforms import Form, StringField, validators, SubmitField,IntegerField, SelectField,PasswordField,DateField,EmailField,BooleanField,RadioField, TextAreaField, TimeField, TelField, DateTimeLocalField,FloatField, DecimalField,FileField
 
 ##################################################################################################################################
 #PESQUISA
@@ -188,4 +188,17 @@ class frm_visualizar_solicitacao(FlaskForm):
     ufsolicitante = StringField('Estado:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})
     cidadesolicitante = StringField('Cidade:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})     
     status = SelectField('Situação:', coerce=int, choices=[(0, 'Ativo'),(1, 'Inativo')], render_kw={'readonly': True})
+    salvar = SubmitField('Salvar')  
+
+##################################################################################################################################
+#SOLICITAÇÃO / FOTO
+##################################################################################################################################
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#FORMUÁRIO: solicitação
+#TIPO: edição
+#TABELA: tb_solicitacao_foto
+#---------------------------------------------------------------------------------------------------------------------------------
+class frm_editar_solicitacao_foto(FlaskForm):
+    imagem = FileField('Imagem:', [validators.DataRequired()], render_kw={"placeholder": "selecionar imagem"})
     salvar = SubmitField('Salvar')  

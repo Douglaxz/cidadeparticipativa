@@ -52,7 +52,7 @@ class tb_tiposervico(db.Model):
         return '<Name %r>' % self.name    
 
 #---------------------------------------------------------------------------------------------------------------------------------
-#TABELA: TIPO SERVIÇO
+#TABELA: SOLICITAÇÕES
 #ORIGEM: BANCO DE DADOS
 #---------------------------------------------------------------------------------------------------------------------------------
 class tb_solicitacao(db.Model):
@@ -77,3 +77,12 @@ class tb_solicitacao(db.Model):
     status_solicitacao = db.Column(db.Integer, nullable=False)
     def __repr__(self):
         return '<Name %r>' % self.name    
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#TABELA: SOLICITAÇÕES / FOTOS
+#ORIGEM: BANCO DE DADOS
+#---------------------------------------------------------------------------------------------------------------------------------
+class tb_solicitacao_foto(db.Model):
+    cod_solicitacao_foto = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    arquivo_solicitacao_foto = db.Column(db.String(500), nullable=False)
+    cod_solicitacao = db.Column(db.Integer, nullable=False)

@@ -2,6 +2,7 @@
 from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, session, flash, url_for, send_from_directory,send_file,jsonify
 from flask_qrcode import QRcode
+from werkzeug.utils import secure_filename
 import time
 from datetime import date, timedelta
 from cidadeparticipativa import app, db
@@ -10,7 +11,8 @@ from models import tb_user,\
     tb_usertype,\
     tb_tiposolicitacao,\
     tb_tiposervico,\
-    tb_solicitacao
+    tb_solicitacao,\
+    tb_solicitacao_foto
 from helpers import \
     frm_pesquisa, \
     frm_editar_senha,\
@@ -23,7 +25,8 @@ from helpers import \
     frm_editar_tiposolicitacao,\
     frm_visualizar_tiposolicitacao,\
     frm_editar_solicitacao,\
-    frm_visualizar_solicitacao
+    frm_visualizar_solicitacao,\
+    frm_editar_solicitacao_foto
 
 
 # ITENS POR PÁGINA
@@ -33,6 +36,7 @@ from flask_bcrypt import generate_password_hash, Bcrypt, check_password_hash
 import string
 import random
 import numbers
+import os
 
 ##################################################################################################################################
 #GERAL
@@ -794,7 +798,41 @@ def criarSolicitacao():
     flash('Solicitação criada com sucesso!','success')
     db.session.add(novoSolicitacao)
     db.session.commit()
-    return redirect(url_for('solicitacao'))
+
+    solicitacao = tb_solicitacao.query.filter_by(desc_solicitacao=descricao).first()
+    id = solicitacao.cod_solicitacao
+    #return redirect(url_for('solicitacao'))
+    return redirect(url_for('novoSolicitacaoFoto',id=id))
+
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#ROTA: novoSolicitacaoFoto
+#FUNÇÃO: inclusão das imagens banco de dados
+#PODE ACESSAR: administrador
+#--------------------------------------------------------------------------------------------------------------------------------- 
+@app.route('/novoSolicitacaoFoto/<int:id>')
+def novoSolicitacaoFoto(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        flash('Sessão expirou, favor logar novamente','danger')
+        return redirect(url_for('login',proxima=url_for('novoSolicitacaoFoto'))) 
+    form = frm_editar_solicitacao_foto()
+    return render_template('novoSolicitacaoFoto.html', titulo='Inserir imagens', form=form, id=id)
+
+@app.route('/solicitacao_foto/<int:id>', methods=['POST'])
+def solicitacao_foto(id):
+    arquivo = request.files['imagem']
+    nome_arquivo = secure_filename(arquivo.filename)
+    nome_base, extensao = os.path.splitext(nome_arquivo)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+    nome_unico = f"{nome_base}_{timestamp}{extensao}"
+    caminho_arquivo = os.path.join(app.config['UPLOAD_PATH'], nome_unico)
+    arquivo.save(caminho_arquivo)
+
+    flash('Imagem carregada com sucesso!','success')
+    novoSolicitacaoFoto = tb_solicitacao_foto(cod_solicitacao=id,arquivo_solicitacao_foto=nome_unico)
+    db.session.add(novoSolicitacaoFoto)
+    db.session.commit()
+    return redirect(url_for('novoSolicitacaoFoto',id=id))
 
 #---------------------------------------------------------------------------------------------------------------------------------
 #ROTA: visualizarSolicitacao
@@ -807,6 +845,15 @@ def visualizarSolicitacao(id):
         flash('Sessão expirou, favor logar novamente','danger')
         return redirect(url_for('login',proxima=url_for('visualizarSolicitacao')))  
     solicitacao = tb_solicitacao.query.filter_by(cod_solicitacao=id).first()
+    solicitacao_foto = tb_solicitacao_foto.query.filter_by(cod_solicitacao=id).all()
+
+    app.config['UPLOAD_FOLDER'] = 'uploads/'
+
+    nomes_arquivos = [foto.arquivo_solicitacao_foto for foto in solicitacao_foto]
+    caminhos_arquivos = [os.path.join(app.config['UPLOAD_FOLDER'], nome_arquivo) for nome_arquivo in nomes_arquivos]
+    
+    
+
     form = frm_visualizar_solicitacao()
     form.descricao.data = solicitacao.desc_solicitacao
     form.tiposolicitacao.data = solicitacao.cod_tiposolicitacao
@@ -826,7 +873,7 @@ def visualizarSolicitacao(id):
     form.ufsolicitante.data = solicitacao.ufsolicitante_solicitacao
     form.cidadesolicitante.data = solicitacao.cidadesolicitante_solicitacao
     form.status.data = solicitacao.status_solicitacao
-    return render_template('visualizarSolicitacao.html', titulo='Visualizar Solicitacao', id=id, form=form)   
+    return render_template('visualizarSolicitacao.html', titulo='Visualizar Solicitacao', id=id, form=form, caminhos_arquivos=caminhos_arquivos)   
 
 #---------------------------------------------------------------------------------------------------------------------------------
 #ROTA: editarSolicitacao
