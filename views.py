@@ -29,6 +29,7 @@ from helpers import \
     frm_editar_solicitacao_foto
 
 
+
 # ITENS POR PÁGINA
 from config import ROWS_PER_PAGE, CHAVE
 from flask_bcrypt import generate_password_hash, Bcrypt, check_password_hash
@@ -723,10 +724,30 @@ def solicitacao():
         pesquisa = form.pesquisa_responsiva.data
     
     if pesquisa == "" or pesquisa == None:     
-        solicitacoes = tb_solicitacao.query.order_by(tb_solicitacao.desc_solicitacao)\
+        solicitacoes = tb_solicitacao.query\
+        .join(tb_tiposervico, tb_tiposervico.cod_tiposervico==tb_solicitacao.cod_tiposervico)\
+        .join(tb_tiposolicitacao, tb_tiposolicitacao.cod_tiposolicitacao==tb_solicitacao.cod_tiposolicitacao)\
+        .add_columns(tb_tiposolicitacao.desc_tiposolicitacao,\
+                     tb_tiposervico.desc_tiposervico, \
+                     tb_solicitacao.status_solicitacao,\
+                     tb_solicitacao.cod_solicitacao,\
+                     tb_solicitacao.data_solicitacao,\
+                     tb_solicitacao.datacad_solicitacao
+                  )\
+        .order_by(tb_solicitacao.datacad_solicitacao.desc())\
         .paginate(page=page, per_page=ROWS_PER_PAGE , error_out=False)
     else:
-        solicitacoes = tb_solicitacao.query.order_by(tb_solicitacao.desc_solicitacao)\
+        solicitacoes = tb_solicitacao.query\
+        .join(tb_tiposervico, tb_tiposervico.cod_tiposervico==tb_solicitacao.cod_tiposervico)\
+        .join(tb_tiposolicitacao, tb_tiposolicitacao.cod_tiposolicitacao==tb_solicitacao.cod_tiposolicitacao)\
+        .add_columns(tb_tiposolicitacao.desc_tiposolicitacao,\
+                     tb_tiposervico.desc_tiposervico, \
+                     tb_solicitacao.status_solicitacao,\
+                     tb_solicitacao.cod_solicitacao,\
+                     tb_solicitacao.data_solicitacao,\
+                     tb_solicitacao.datacad_solicitacao
+                  )\
+        .order_by(tb_solicitacao.datacad_solicitacao.desc())\
         .filter(tb_solicitacao.desc_solicitacao.ilike(f'%{pesquisa}%'))\
         .paginate(page=page, per_page=ROWS_PER_PAGE, error_out=False)        
     return render_template('solicitacao.html', titulo='Solicitações', solicitacoes=solicitacoes, form=form)
@@ -834,6 +855,27 @@ def solicitacao_foto(id):
     db.session.commit()
     return redirect(url_for('novoSolicitacaoFoto',id=id))
 
+
+@app.route('/excluirFoto/<int:id>')
+def excluirFoto(id):
+    solicitacao_foto = tb_solicitacao_foto.query.filter_by(cod_solicitacao_foto=id).first()
+    idsolicitacao = solicitacao_foto.cod_solicitacao
+    caminho_arquivo = os.path.join(app.config['UPLOAD_PATH'], solicitacao_foto.arquivo_solicitacao_foto)
+    try:
+        os.remove(caminho_arquivo)
+        msg = "Arquivo excluído com sucesso!"
+    except Exception as e:
+        msg = f"Ocorreu um erro ao excluir o arquivo: {e}"
+
+    apagarFoto = tb_solicitacao_foto.query.filter_by(cod_solicitacao_foto=id).one()
+    db.session.delete(apagarFoto)
+    db.session.commit()
+
+    flash('Imagem apagada com sucesso!','success')
+    return redirect(url_for('visualizarSolicitacao',id=idsolicitacao))
+
+
+
 #---------------------------------------------------------------------------------------------------------------------------------
 #ROTA: visualizarSolicitacao
 #FUNÇÃO: formulario de visualização
@@ -846,15 +888,11 @@ def visualizarSolicitacao(id):
         return redirect(url_for('login',proxima=url_for('visualizarSolicitacao')))  
     solicitacao = tb_solicitacao.query.filter_by(cod_solicitacao=id).first()
     solicitacao_foto = tb_solicitacao_foto.query.filter_by(cod_solicitacao=id).all()
-
-    app.config['UPLOAD_FOLDER'] = 'uploads/'
-
     nomes_arquivos = [foto.arquivo_solicitacao_foto for foto in solicitacao_foto]
-    caminhos_arquivos = [os.path.join(app.config['UPLOAD_FOLDER'], nome_arquivo) for nome_arquivo in nomes_arquivos]
-    
-    
-
     form = frm_visualizar_solicitacao()
+    form.datacadastro.data = solicitacao.datacad_solicitacao
+    form.data.data = solicitacao.data_solicitacao
+    form.fone.data = solicitacao.fone_solicitacao
     form.descricao.data = solicitacao.desc_solicitacao
     form.tiposolicitacao.data = solicitacao.cod_tiposolicitacao
     form.tiposervico.data = solicitacao.cod_tiposervico
@@ -873,7 +911,7 @@ def visualizarSolicitacao(id):
     form.ufsolicitante.data = solicitacao.ufsolicitante_solicitacao
     form.cidadesolicitante.data = solicitacao.cidadesolicitante_solicitacao
     form.status.data = solicitacao.status_solicitacao
-    return render_template('visualizarSolicitacao.html', titulo='Visualizar Solicitacao', id=id, form=form, caminhos_arquivos=caminhos_arquivos)   
+    return render_template('visualizarSolicitacao.html', titulo='Visualizar Solicitacao', id=id, form=form, nomes_arquivos=nomes_arquivos,solicitacao_foto=solicitacao_foto)   
 
 #---------------------------------------------------------------------------------------------------------------------------------
 #ROTA: editarSolicitacao
@@ -887,6 +925,9 @@ def editarSolicitacao(id):
         return redirect(url_for('login',proxima=url_for('editarSolicitacao')))  
     solicitacao = tb_solicitacao.query.filter_by(cod_solicitacao=id).first()
     form = frm_editar_solicitacao()
+    form.datacadastro.data = solicitacao.datacad_solicitacao
+    form.data.data = solicitacao.data_solicitacao
+    form.fone.data = solicitacao.fone_solicitacao
     form.descricao.data = solicitacao.desc_solicitacao
     form.tiposolicitacao.data = solicitacao.cod_tiposolicitacao
     form.tiposervico.data = solicitacao.cod_tiposervico
@@ -918,13 +959,25 @@ def atualizarSolicitacao():
         flash('Sessão expirou, favor logar novamente','danger')
         return redirect(url_for('login',proxima=url_for('atualizarSolicitacao')))      
     form = frm_editar_solicitacao(request.form)
+    msg = "1111"
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(f'Erro no campo "{getattr(form, field).label.text}": {error}')
+            #return redirect(url_for('editarSolicitacao', id=request.form['id']))
+            msg = msg + (f'Erro no campo "{getattr(form, field).label.text}": {error}')
+    
+
+    
     if form.validate_on_submit():
         id = request.form['id']
         solicitacao = tb_solicitacao.query.filter_by(cod_solicitacao=request.form['id']).first()
+        solicitacao.datacad_solicitacao = form.datacadastro.data
+        solicitacao.data_solicitacao = form.data.data
+        solicitacao.fone_solicitacao = form.fone.data
         solicitacao.desc_solicitacao = form.descricao.data
         solicitacao.status_solicitacao = form.status.data
-        solicitacao.cod_tiposervico = form.tiposolicitacao.data
-        solicitacao.cod_tiposolicitacao = form.tiposervico.data
+        solicitacao.cod_tiposervico = form.tiposervico.data
+        solicitacao.cod_tiposolicitacao = form.tiposolicitacao.data
         solicitacao.cep_solicitacao = form.cep.data
         solicitacao.rua_solicitacao = form.rua.data
         solicitacao.numerores_solicitacao = form.numero.data
@@ -944,4 +997,4 @@ def atualizarSolicitacao():
         flash('Solicitação atualizada com sucesso!','success')
     else:
         flash('Favor verificar os campos!','danger')
-    return redirect(url_for('visualizarSolicitacao', id=request.form['id']))
+    return redirect(url_for('editarSolicitacao', id=request.form['id']))

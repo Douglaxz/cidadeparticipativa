@@ -13,7 +13,7 @@ SQLALCHEMY_DATABASE_URI = \
         database ='db_cidadeparticipativa')
 
 #CAMINHO DO UPLOAD (SE DISPONIVEL)
-UPLOAD_PATH = os.path.dirname(os.path.abspath(__file__)) + '/upload/'
+UPLOAD_PATH = os.path.dirname(os.path.abspath(__file__)) + '/static/upload/'
 
 #QUANTIDADE DE REGISTROS POR PÁGINA
 ROWS_PER_PAGE = 10

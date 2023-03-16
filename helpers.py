@@ -161,6 +161,9 @@ class frm_editar_solicitacao(FlaskForm):
     bairrosolicitante = StringField('Bairro:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={"placeholder": "digite o bairro do logradouro da solicitação"})
     ufsolicitante = StringField('Estado:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={"placeholder": "digite a o estado da solicitação"})
     cidadesolicitante = StringField('Cidade:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={"placeholder": "digite a cidade da solicitação"})    
+    datacadastro = DateTimeLocalField('Data Cadastro:', [validators.DataRequired()], format='%Y-%m-%dT%H:%M')
+    data = DateTimeLocalField('Data:', [validators.DataRequired()], format='%Y-%m-%dT%H:%M')
+    fone = TelField('Telefone:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={"placeholder": "digite o telefone do solicitante"})
     status = SelectField('Situação:', coerce=int, choices=[(0, 'Ativo'),(1, 'Inativo')])
     salvar = SubmitField('Salvar')    
 
@@ -186,7 +189,10 @@ class frm_visualizar_solicitacao(FlaskForm):
     numerosolicitante = StringField('Nº:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})
     bairrosolicitante = StringField('Bairro:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})
     ufsolicitante = StringField('Estado:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})
-    cidadesolicitante = StringField('Cidade:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})     
+    cidadesolicitante = StringField('Cidade:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})   
+    datacadastro = DateTimeLocalField('Data Cadastro:', [validators.DataRequired()], render_kw={'readonly': True})    
+    data = DateTimeLocalField('Data Ocorrido:', [validators.DataRequired()], render_kw={'readonly': True})    
+    fone = TelField('Telefone:', [validators.DataRequired(), validators.Length(min=1, max=50)],render_kw={'readonly': True})      
     status = SelectField('Situação:', coerce=int, choices=[(0, 'Ativo'),(1, 'Inativo')], render_kw={'readonly': True})
     salvar = SubmitField('Salvar')  
 

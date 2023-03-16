@@ -75,6 +75,9 @@ class tb_solicitacao(db.Model):
     cidadesolicitante_solicitacao = db.Column(db.String(50), nullable=False)
     ufsolicitante_solicitacao = db.Column(db.String(50), nullable=False)    
     status_solicitacao = db.Column(db.Integer, nullable=False)
+    datacad_solicitacao = db.Column(db.DateTime, nullable=False)
+    data_solicitacao = db.Column(db.DateTime, nullable=False)
+    fone_solicitacao = db.Column(db.String(50), nullable=False)
     def __repr__(self):
         return '<Name %r>' % self.name    
 

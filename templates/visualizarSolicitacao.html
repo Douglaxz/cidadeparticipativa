@@ -14,6 +14,9 @@
 <div class="boxformulario">
   <fieldset>
     {{form.csrf_token()}}
+    <div class="form-group">{{ form.datacadastro.label(class='form-label') }}
+      {{ form.datacadastro(class='form-control') }}
+    </div>    
     <div class="form-group">{{ form.descricao.label(class='form-label') }}
       {{ form.descricao(class='form-control') }}
     </div>
@@ -22,7 +25,10 @@
     </div>        
     <div class="form-group">{{ form.tiposervico.label(class='form-label') }}
       {{ form.tiposervico(class='form-control') }}
-    </div>      
+    </div>
+    <div class="form-group">{{ form.data.label(class='form-label') }}
+      {{ form.data(class='form-control') }}
+    </div>            
     <div class="form-group">{{ form.cep.label(class='form-label') }}
       {{ form.cep(class='form-control') }}
     </div>        
@@ -49,6 +55,9 @@
     <div class="form-group">{{ form.sexo.label(class='form-label') }}
       {{ form.sexo(class='form-control') }}
     </div>
+    <div class="form-group">{{ form.fone.label(class='form-label') }}
+      {{ form.fone(class='form-control') }}
+    </div>        
     <div class="form-group">{{ form.cepsolicitante.label(class='form-label') }}
       {{ form.cepsolicitante(class='form-control') }}
     </div>        
@@ -85,20 +94,32 @@
   <table class="table table-bordered table-responsiv table-hover">
       <thead>
           <tr>
-            <th width="40%">Resíduo</th>
-            <th width="40%">Acondicionamento</th>
-            <th width="10%">Status</th>
+            <th width="90%">Imagem</th>
             <th width="10%">Ações</th>
           </tr>
       </thead>
       <tbody>
-
-          {% for caminho_arquivo in caminhos_arquivos %}
-          <td class="text-left">
-            <img src="{{ caminho_arquivo }}" alt="{{ caminho_arquivo }}">
-            <img src="{{ url_for('static', filename = 'logobranco.png') }}">
+          {% for foto in solicitacao_foto %}
+          <tr>
+              <td class="text-left">{{ foto.arquivo_solicitacao_foto }}</td>
+              <td>
+                <a class="btn" href="{{url_for('excluirFoto',id=foto.cod_solicitacao_foto)}}"><i class="bi bi-eraser" style="font-size:1.5rem; color:black;"></i></a>
+            </td>              
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+</div>
+<div class="boxcentral">
+  <table class="table table-bordered table-responsiv table-hover">
+      <tbody>
+        {% for nomes in nomes_arquivos %}
+        <tr>
+        <td align="center">
+          <img src="{{ url_for('static', filename='upload/'+nomes) }}" width="800" height="600"/>
         </td>
-        {% endfor %}          
+      </tr>
+    {% endfor %}       
       </tbody>
   </table>
 </div>
