@@ -144,7 +144,7 @@ class frm_visualizar_tiposolicitacao(FlaskForm):
 #TABELA: tb_solicitacao
 #---------------------------------------------------------------------------------------------------------------------------------
 class frm_editar_solicitacao(FlaskForm):
-    descricao = StringField('Descrição:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={"placeholder": "digite a descrição da solicitação"})
+    descricao = TextAreaField('Descrição:', [validators.DataRequired(), validators.Length(min=1, max=500)], render_kw={"placeholder": "digite a descrição da solicitação"})
     tiposolicitacao = SelectField('Tipo de Solicitação:', coerce=int,  choices=[(g.cod_tiposolicitacao, g.desc_tiposolicitacao) for g in tb_tiposolicitacao.query.order_by('desc_tiposolicitacao')])
     tiposervico = SelectField('Tipo de Serviço:', coerce=int,  choices=[(g.cod_tiposervico, g.desc_tiposervico) for g in tb_tiposervico.query.order_by('desc_tiposervico')])
     cep = IntegerField('CEP:', [validators.DataRequired()], id="cep")
@@ -170,7 +170,7 @@ class frm_editar_solicitacao(FlaskForm):
 #TABELA: tb_solicitacao
 #---------------------------------------------------------------------------------------------------------------------------------
 class frm_visualizar_solicitacao(FlaskForm):
-    descricao = StringField('Descrição:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={'readonly': True})
+    descricao = TextAreaField('Descrição:', [validators.DataRequired(), validators.Length(min=1, max=500)], render_kw={'readonly': True})
     tiposolicitacao = SelectField('Tipo de Solicitação:', coerce=int,  choices=[(g.cod_tiposolicitacao, g.desc_tiposolicitacao) for g in tb_tiposolicitacao.query.order_by('desc_tiposolicitacao')], render_kw={'readonly': True})
     tiposervico = SelectField('Tipo de Serviço:', coerce=int,  choices=[(g.cod_tiposervico, g.desc_tiposervico) for g in tb_tiposervico.query.order_by('desc_tiposervico')], render_kw={'readonly': True})    
     cep = IntegerField('CEP:', [validators.DataRequired()], render_kw={'readonly': True})

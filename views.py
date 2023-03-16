@@ -772,11 +772,6 @@ def criarSolicitacao():
     bairrosolicitante  = form.bairrosolicitante.data
     ufsolicitante  = form.ufsolicitante.data
     cidadesolicitante  = form.cidadesolicitante.data
-       
-    
-    
-
-
     novoSolicitacao = tb_solicitacao(desc_solicitacao = descricao,\
                                     cod_tiposervico = tiposolicitacao,\
                                     cod_tiposolicitacao = tiposervico,\
@@ -794,7 +789,7 @@ def criarSolicitacao():
                                     bairrosolicitante_solicitacao = bairrosolicitante,\
                                     cidadesolicitante_solicitacao = cidadesolicitante,\
                                     ufsolicitante_solicitacao = ufsolicitante,\
-                                    status_tiposervico=status\
+                                    status_solicitacao=status\
                                      )
     flash('Solicitação criada com sucesso!','success')
     db.session.add(novoSolicitacao)
@@ -818,7 +813,7 @@ def visualizarSolicitacao(id):
     form.tiposervico.data = solicitacao.cod_tiposervico
     form.cep.data = solicitacao.cep_solicitacao
     form.rua.data = solicitacao.rua_solicitacao
-    form.numero.data = solicitacao.numero_solicitacao
+    form.numero.data = solicitacao.numerores_solicitacao
     form.bairro.data = solicitacao.bairro_solicitacao
     form.uf.data = solicitacao.uf_solicitacao
     form.cidade.data = solicitacao.cidade_solicitacao
@@ -826,7 +821,7 @@ def visualizarSolicitacao(id):
     form.sexo.data = solicitacao.sexo_solicitacao
     form.cepsolicitante.data = solicitacao.cepsolicitante_solicitacao
     form.ruasolicitante.data = solicitacao.ruasolicitante_solicitacao
-    form.numerosolicitante.data = solicitacao.numerosolicitante_solicitacao
+    form.numerosolicitante.data = solicitacao.numeroressolicitante_solicitacao
     form.bairrosolicitante.data = solicitacao.bairrosolicitante_solicitacao
     form.ufsolicitante.data = solicitacao.ufsolicitante_solicitacao
     form.cidadesolicitante.data = solicitacao.cidadesolicitante_solicitacao
@@ -850,7 +845,7 @@ def editarSolicitacao(id):
     form.tiposervico.data = solicitacao.cod_tiposervico
     form.cep.data = solicitacao.cep_solicitacao
     form.rua.data = solicitacao.rua_solicitacao
-    form.numero.data = solicitacao.numero_solicitacao
+    form.numero.data = solicitacao.numerores_solicitacao
     form.bairro.data = solicitacao.bairro_solicitacao
     form.uf.data = solicitacao.uf_solicitacao
     form.cidade.data = solicitacao.cidade_solicitacao
@@ -858,7 +853,7 @@ def editarSolicitacao(id):
     form.sexo.data = solicitacao.sexo_solicitacao
     form.cepsolicitante.data = solicitacao.cepsolicitante_solicitacao
     form.ruasolicitante.data = solicitacao.ruasolicitante_solicitacao
-    form.numerosolicitante.data = solicitacao.numerosolicitante_solicitacao
+    form.numerosolicitante.data = solicitacao.numeroressolicitante_solicitacao
     form.bairrosolicitante.data = solicitacao.bairrosolicitante_solicitacao
     form.ufsolicitante.data = solicitacao.ufsolicitante_solicitacao
     form.cidadesolicitante.data = solicitacao.cidadesolicitante_solicitacao
@@ -899,7 +894,7 @@ def atualizarSolicitacao():
         solicitacao.ufsolicitante_solicitacao = form.ufsolicitante.data
         db.session.add(solicitacao)
         db.session.commit()
-        flash('Solicitação atualizado com sucesso!','success')
+        flash('Solicitação atualizada com sucesso!','success')
     else:
         flash('Favor verificar os campos!','danger')
-    return redirect(url_for('visualizarTipoServico', id=request.form['id']))
+    return redirect(url_for('visualizarSolicitacao', id=request.form['id']))
