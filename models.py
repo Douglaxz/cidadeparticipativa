@@ -89,3 +89,12 @@ class tb_solicitacao_foto(db.Model):
     cod_solicitacao_foto = db.Column(db.Integer, primary_key=True, autoincrement=True)
     arquivo_solicitacao_foto = db.Column(db.String(500), nullable=False)
     cod_solicitacao = db.Column(db.Integer, nullable=False)
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#TABELA: TIPO SERVIÇO
+#ORIGEM: BANCO DE DADOS
+#---------------------------------------------------------------------------------------------------------------------------------
+class tb_resposta(db.Model):
+    cod_resposta = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    desc_resposta = db.Column(db.String(500), nullable=False)
+    cod_solicitacao = db.Column(db.Integer, nullable=False) 

@@ -1,5 +1,5 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Fjalla One', sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f1f1f1;
@@ -13,8 +13,8 @@ body {
   }
 
   .image {
-    flex: 0 0 75%;
-    background-image: url('/static/fundo.jpg');
+    flex: 0 0 72%;
+    background-image: url('/static/fundo1.jpg');
     background-size: cover;
     background-position: center;
     height: 100%;
@@ -49,7 +49,6 @@ body {
     padding: 20px;
     padding-top: 130px;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    height: 100%;
     background-color: #fff;
   }
 
@@ -85,22 +84,17 @@ body {
   }
   @media screen and (max-width: 1040px){
     body {
-        font-family: Arial, sans-serif;
+        font-family: 'Fjalla One', sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #f1f1f1;
-        width: 100vw;
-        height: 100vh;
-        border: 1px black solid;
-        max-width: 100vw;
-        max-height: 100vh;
       }
+
     .container {
       flex-direction: column;
-      height: auto;
     }
+    
     .image {
-      flex: 0 0 100%;
+      flex: 0 0 0%; /* alterado */
       height: 15vh;
     }
     
@@ -109,36 +103,44 @@ body {
     }
 
     .form {
+      flex: 0 0 100%; /* alterado */
       padding-top: 100px;
+      border: 1px black solid;
+      height: 90%;
     }
+    
 
 
     label {
         font-size: 50px;
+        margin-top: 60px;
+        margin-bottom: 60px;
       }
 
     
-      .form input[type="text"], .form input[type="password"] {
-        display: block;
-        width: 100%;
-        height: 100%;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-        font-size: 50px;
-      }
+    .form input[type="text"], .form input[type="password"] {
+      font-family: 'Fjalla One', sans-serif;
+      display: block;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      margin-top: 60px;
+      margin-bottom: 60px;
+      border-radius: 5px;
+      border: 2px solid black;
+      box-sizing: border-box;
+      font-size: 50px;
+    }
 
-      .form input[type="submit"] {
-        background-color: #4CAF50;
-        color: #fff;
-        padding: 30px 40px;
-        border: none;
-        border-radius: 5px;
-        font-size: 50px;
-        cursor: pointer;
-      }
+    .form input[type="submit"] {
+      background-color: #4CAF50;
+      color: #fff;
+      padding: 30px 40px;
+      border: none;
+      border-radius: 5px;
+      font-size: 50px;
+      cursor: pointer;
+    }
   }
   
   

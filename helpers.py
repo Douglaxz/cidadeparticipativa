@@ -164,7 +164,7 @@ class frm_editar_solicitacao(FlaskForm):
     datacadastro = DateTimeLocalField('Data Cadastro:', [validators.DataRequired()], format='%Y-%m-%dT%H:%M')
     data = DateTimeLocalField('Data:', [validators.DataRequired()], format='%Y-%m-%dT%H:%M')
     fone = TelField('Telefone:', [validators.DataRequired(), validators.Length(min=1, max=50)], render_kw={"placeholder": "digite o telefone do solicitante"})
-    status = SelectField('Situação:', coerce=int, choices=[(0, 'Ativo'),(1, 'Inativo')])
+    status = SelectField('Situação:', coerce=int, choices=[(0, 'Pendente'),(1, 'Respondida')])
     salvar = SubmitField('Salvar')    
 
 #---------------------------------------------------------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ class frm_visualizar_solicitacao(FlaskForm):
     datacadastro = DateTimeLocalField('Data Cadastro:', [validators.DataRequired()], render_kw={'readonly': True})    
     data = DateTimeLocalField('Data Ocorrido:', [validators.DataRequired()], render_kw={'readonly': True})    
     fone = TelField('Telefone:', [validators.DataRequired(), validators.Length(min=1, max=50)],render_kw={'readonly': True})      
-    status = SelectField('Situação:', coerce=int, choices=[(0, 'Ativo'),(1, 'Inativo')], render_kw={'readonly': True})
+    status = SelectField('Situação:', coerce=int, choices=[(0, 'Pendente'),(1, 'Respondida')], render_kw={'readonly': True})
     salvar = SubmitField('Salvar')  
 
 ##################################################################################################################################
@@ -207,4 +207,27 @@ class frm_visualizar_solicitacao(FlaskForm):
 #---------------------------------------------------------------------------------------------------------------------------------
 class frm_editar_solicitacao_foto(FlaskForm):
     imagem = FileField('Imagem:', [validators.DataRequired()], render_kw={"placeholder": "selecionar imagem"})
+    salvar = SubmitField('Salvar')  
+
+
+##################################################################################################################################
+#RESPOSTA
+##################################################################################################################################
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#FORMUÁRIO: resposta
+#TIPO: edição
+#TABELA: tb_resposta
+#---------------------------------------------------------------------------------------------------------------------------------
+class frm_editar_resposta(FlaskForm):
+    resposta = TextAreaField('Resposta:', [validators.DataRequired(), validators.Length(min=1, max=500)], render_kw={"placeholder": "digite a descrição do tipo de usuário"})
+    salvar = SubmitField('Salvar')    
+
+#---------------------------------------------------------------------------------------------------------------------------------
+#FORMUÁRIO: resposta
+#TIPO: visualização
+#TABELA: tb_resposta
+#---------------------------------------------------------------------------------------------------------------------------------
+class frm_visualizar_resposta(FlaskForm):
+    resposta = TextAreaField('Resposta:', [validators.DataRequired(), validators.Length(min=1, max=500)], render_kw={'readonly': True})
     salvar = SubmitField('Salvar')  

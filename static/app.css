@@ -34,7 +34,14 @@ footer, header, hgroup, menu, nav, section {
 
 .navbar-default {
     background: linear-gradient(90deg, #bf7141,#cbb852,#c6e6d8,#5f439a);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;    
 }
+
+.navbar-toggler-icon {
+    background-color: transparent;
+  }
 
 ol, ul {
     list-style: none;
@@ -476,8 +483,8 @@ select[readonly] {
   }
 
   .imagemsolicitacao{
-    width: 800px;
-    height: 600px;
+    width: 90%;
+    height: 30%;
 }
 
 @media screen and (max-width: 1040px){
@@ -573,14 +580,6 @@ select[readonly] {
         width: 100vw;
     }
 
-    footer {
-        width: 100vw;
-        height: 10vh;
-        bottom:0;
-        background-color: white;
-        text-align: center;
-        vertical-align: top;
-    }   
 
     .busca__input {
         align-items: center;
