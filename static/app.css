@@ -475,8 +475,17 @@ select[readonly] {
 
   }
 
+  .imagemsolicitacao{
+    width: 800px;
+    height: 600px;
+}
+
 @media screen and (max-width: 1040px){
 
+    .imagemsolicitacao{
+        width: 85vw;
+        height: 70vh;
+    }
     .msg_alert{
         margin: 15px auto;
         width: 100%; /* Valor da Largura */

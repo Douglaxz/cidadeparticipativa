@@ -911,7 +911,8 @@ def visualizarSolicitacao(id):
     form.ufsolicitante.data = solicitacao.ufsolicitante_solicitacao
     form.cidadesolicitante.data = solicitacao.cidadesolicitante_solicitacao
     form.status.data = solicitacao.status_solicitacao
-    return render_template('visualizarSolicitacao.html', titulo='Visualizar Solicitacao', id=id, form=form, nomes_arquivos=nomes_arquivos,solicitacao_foto=solicitacao_foto)   
+    endereco = solicitacao.ruasolicitante_solicitacao +","+ solicitacao.numeroressolicitante_solicitacao + "," + solicitacao.bairrosolicitante_solicitacao + "," + solicitacao.cidadesolicitante_solicitacao + solicitacao.ufsolicitante_solicitacao
+    return render_template('visualizarSolicitacao.html', titulo='Visualizar Solicitacao', id=id, form=form, nomes_arquivos=nomes_arquivos,solicitacao_foto=solicitacao_foto,endereco=endereco)   
 
 #---------------------------------------------------------------------------------------------------------------------------------
 #ROTA: editarSolicitacao

@@ -28,4 +28,5 @@ GoogleMaps(app)
 from views import *
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='192.168.31.69', debug=True)
+    #app.run(debug=True)

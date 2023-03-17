@@ -2,92 +2,7 @@
 <html>
 <head>
   <title>cidade participativa</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f1f1f1;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: row;
-      justify-content: flex-start;
-      height: 100vh;
-    }
-
-    .image {
-      flex: 0 0 75%;
-      background-image: url('/static/fundo.jpg');
-      background-size: cover;
-      background-position: center;
-      height: 100%;
-      position: relative;
-    }
-
-    .image::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      z-index: 1;
-    }
-
-    .welcome {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 2;
-      color: #fff;
-      font-size: 24px;
-      text-align: center;
-    }
-
-    .form {
-      flex: 0 0 25%; /* alterado */
-      background-color: #fff;
-      padding: 20px;
-      padding-top: 130px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      height: 100%;
-      background-color: #fff;
-    }
-
-    .form h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .form input[type="text"], .form input[type="password"] {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
-
-    .form input[type="submit"] {
-      background-color: #4CAF50;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .form input[type="submit"]:hover {
-      background-color: #45a049;
-    }
-  </style>
+  <link href="{{ url_for('static',filename='telalogin.css') }}" rel="stylesheet">
 </head>
 <body>
   <div class="container">
@@ -98,12 +13,12 @@
     </div>
     <div class="form">
       <div align="center">
-        <img src="{{ url_for('static', filename = 'logo-frente.png') }}" />
+        <img src="{{ url_for('static', filename = 'logo-frente.png') }}" class="image"/>
       </div>
     &nbsp;</p>
       <form method="POST" action="{{ url_for('autenticar') }}">
         <label for="username">Usuário:</label>
-        <input class="form-control" type="text" name="usuario" placeholder="login" required />
+        <input class="form-control aumentarTamanho" type="text" name="usuario" placeholder="login" required />
 
         <label for="password">Senha:</label>
         <input class="form-control" type="password" name="senha" placeholder="senha" required />
