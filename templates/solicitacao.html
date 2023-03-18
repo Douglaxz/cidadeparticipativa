@@ -43,7 +43,7 @@
               <td class="text-left">{{ solicitacao.desc_tiposolicitacao }}</td>
               <td class="text-left">{{ solicitacao.desc_tiposervico }}</td>
               <td class="text-left">
-                {% if solicitacao.status_solicitacao == 0: %}
+                {% if solicitacao.status_solicitacao == 1: %}
                 <i class="bi bi-toggle-on text-success" style="font-size:2rem; color:white;">
                 {% else %}
                 <i class="bi bi-toggle-off text-danger" style="font-size:2rem; color:white;">
