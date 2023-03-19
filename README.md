@@ -65,6 +65,7 @@ Para começar, verifique a instalação dos seguintes itens:
 - [X] Funcionalidade cadastro de tipos serviço
 - [X] Funcionalidade cadastro de solicitações (que podem ser reclamações, elogios eou solicitações)
 - [X] Funcionalidade anexar fotos
+- [X] Funcionalidade google maps
 - [X] Funcionalidade finalizar a solicitação
 
 
