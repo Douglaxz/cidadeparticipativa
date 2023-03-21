@@ -16,6 +16,9 @@ Agradecemos por utilizar o Cidade Participativa e esperamos que essa ferramenta 
 ## :video_camera: Amostra do projeto:
 em desenvolvimento
 
+[<img src="https://github.com/Douglaxz/cidadeparticipativa/blob/main/miniatura.png" width="100%">](https://youtu.be/CaSE09P38hA "Cidade Participativa")
+
+
 ## :rocket: Começando:
 Essas instruções permitirão que você obtenha uma cópia do projeto em operação na sua máquina local para fins de desenvolvimento e teste.
 Estapas para rodar o projeto

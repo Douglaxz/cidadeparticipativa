@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 import time
 from datetime import date, timedelta
 from cidadeparticipativa import app, db
+app.app_context().push()
+db.create_all()
 from sqlalchemy import func
 from models import tb_user,\
     tb_usertype,\
